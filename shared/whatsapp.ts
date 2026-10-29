@@ -1,9 +1,45 @@
 import { PAYMENT_LABEL, STORE } from "./menu";
 import { brl } from "./pricing";
-import type { Order } from "./types";
+import type { Order, OrderStatus } from "./types";
 
 export function whatsappLink(message: string): string {
   return `https://wa.me/${STORE.whatsappNumber}?text=${encodeURIComponent(message)}`;
+}
+
+/** Link para abrir a conversa com o CLIENTE (telefone digitado por ele no checkout). */
+export function customerWhatsappUrl(phone: string, message?: string): string {
+  let digits = phone.replace(/\D/g, "").replace(/^0+/, "");
+  // DDD + número = 10 ou 11 dígitos: falta o código do Brasil. (Não dá para testar só
+  // "começa com 55", porque o DDD 55 existe — Santa Maria/RS.)
+  if (digits.length <= 11) digits = "55" + digits;
+  return message
+    ? `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/${digits}`;
+}
+
+/** Texto enviado ao cliente a cada mudança de status. Edite à vontade. */
+export function buildStatusMessage(
+  order: Pick<Order, "id" | "customer" | "total">,
+  status: OrderStatus,
+  siteOrigin: string,
+): string {
+  const first = order.customer.name.trim().split(/\s+/)[0] || "cliente";
+  const nome = first.charAt(0).toUpperCase() + first.slice(1);
+  const code = `#${order.id}`;
+  const track = `Acompanhe: ${siteOrigin}/pedido/${order.id}`;
+
+  switch (status) {
+    case "recebido":
+      return `Olá, ${nome}! Recebemos o seu pedido ${code} na ${STORE.name} 🍔 Total: ${brl(order.total)}. Já vamos começar a preparar!\n${track}`;
+    case "preparando":
+      return `${nome}, seu pedido ${code} já está na chapa! 🔥 Em breve ele sai para entrega.\n${track}`;
+    case "saiu_entrega":
+      return `${nome}, seu pedido ${code} saiu para entrega! 🛵 O entregador já está a caminho, fique de olho.\n${track}`;
+    case "entregue":
+      return `Pedido ${code} entregue! 😋 Bom apetite, ${nome}, e obrigado por pedir na ${STORE.name}!`;
+    case "cancelado":
+      return `Olá, ${nome}. Infelizmente o seu pedido ${code} foi cancelado. Se tiver qualquer dúvida, é só responder esta mensagem.`;
+  }
 }
 
 export function buildOrderMessage(order: Order, siteOrigin: string): string {
