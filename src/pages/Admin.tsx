@@ -5,6 +5,7 @@ import { Lock, LogOut, MessageCircle, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { PAYMENT_LABEL, STATUS_STEPS } from "@shared/menu";
 import { brl } from "@shared/pricing";
+import { buildStatusMessage, customerWhatsappUrl } from "@shared/whatsapp";
 import type { Order, OrderStatus } from "@shared/types";
 import { ApiError, apiGet, apiPatch } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -161,7 +162,20 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
   const update = useMutation({
     mutationFn: ({ id, status }: { id: string; status: OrderStatus }) =>
       apiPatch<Order>(`/orders/${id}`, { status }, headers),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-orders"] }),
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      const url = customerWhatsappUrl(
+        updated.customer.phone,
+        buildStatusMessage(updated, updated.status, window.location.origin),
+      );
+      toast.success(`Pedido #${updated.id} atualizado`, {
+        duration: 15000,
+        action: {
+          label: "Avisar cliente",
+          onClick: () => window.open(url, "_blank", "noopener,noreferrer"),
+        },
+      });
+    },
     onError: (err: Error) => toast.error(err.message),
   });
 
@@ -252,7 +266,7 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
               <div className="space-y-0.5">
                 <p className="font-semibold">{o.customer.name}</p>
                 <a
-                  href={`https://wa.me/${o.customer.phone.replace(/\D/g, "").replace(/^(?!55)/, "55")}`}
+                  href={customerWhatsappUrl(o.customer.phone)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-emerald-400 hover:underline"
@@ -298,6 +312,18 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
                   {s.label}
                 </button>
               ))}
+              <a
+                href={customerWhatsappUrl(
+                  o.customer.phone,
+                  buildStatusMessage(o, o.status, window.location.origin),
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid={`admin-notify-${o.id}`}
+                className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-emerald-400"
+              >
+                <MessageCircle size={14} /> Avisar cliente
+              </a>
             </div>
           </li>
         ))}
