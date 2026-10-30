@@ -58,6 +58,23 @@ export function StoreTab({ pin, settings }: { pin: string; settings: Settings })
         </Field>
       </section>
 
+      <section className="space-y-4 rounded-2xl border border-line bg-panel p-4">
+        <h2 className="font-bold">Horário de funcionamento</h2>
+        <Field label="Texto que aparece no rodapé do site" id="sf-hours" hint="Pode usar várias linhas. Ex.: Seg a Sex: 18h às 23h">
+          <textarea id="sf-hours" rows={4} maxLength={400} value={f.hours} data-testid="store-hours"
+            placeholder={"Seg a Sex: 18h às 23h\nSáb e Dom: 17h às 00h"}
+            onChange={(e) => set("hours", e.target.value)} className={`${inputCls} resize-none`} />
+        </Field>
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-line bg-panel p-4">
+        <h2 className="font-bold">Instagram</h2>
+        <Field label="Usuário ou link do perfil (opcional)" id="sf-ig" hint="Ex.: urbanburguer ou instagram.com/urbanburguer">
+          <input id="sf-ig" maxLength={120} value={f.instagram} data-testid="store-instagram"
+            onChange={(e) => set("instagram", e.target.value)} className={inputCls} />
+        </Field>
+      </section>
+
       <button
         type="submit"
         disabled={actions.saveSettings.isPending}

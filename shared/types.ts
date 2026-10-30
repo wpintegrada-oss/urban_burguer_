@@ -119,6 +119,8 @@ export interface Settings {
   heroImage: string;
   whatsappNumber: string; // só dígitos, com 55, ex.: 5586998166138
   whatsappDisplay: string;
+  instagram: string; // só o usuário, sem @ (ex.: urbanburguer)
+  hours: string; // horário de funcionamento, texto livre (pode ter várias linhas)
 }
 
 export interface Menu {

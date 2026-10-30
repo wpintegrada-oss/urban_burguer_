@@ -37,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   heroImage: IMG.burgerA,
   whatsappNumber: "5586998166138",
   whatsappDisplay: "(86) 99816-6138",
+  instagram: "urbanburguer__the",
+  hours: "",
 };
 
 const cat = (id: string, name: string, icon: IconName, description: string): Omit<Category, "order" | "active"> => ({

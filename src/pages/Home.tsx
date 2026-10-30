@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Flame, MessageCircle, ShoppingBag } from "lucide-react";
+import { Clock, Flame, Instagram, MessageCircle, ShoppingBag } from "lucide-react";
 import type { MenuItem } from "@shared/types";
 import { brl, isPromoActive } from "@shared/pricing";
 import { useCart } from "@/lib/cart";
@@ -226,6 +226,25 @@ export default function Home() {
         >
           <MessageCircle size={16} /> {settings.whatsappDisplay}
         </a>
+        {settings.instagram && (
+          <a
+            href={`https://instagram.com/${settings.instagram}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="footer-instagram"
+            className="mt-2 flex items-center justify-center gap-1.5 text-brand-soft hover:underline"
+          >
+            <Instagram size={16} /> @{settings.instagram}
+          </a>
+        )}
+        {settings.hours && (
+          <p
+            data-testid="footer-hours"
+            className="mx-auto mt-3 flex max-w-xs items-start justify-center gap-1.5 whitespace-pre-line text-left"
+          >
+            <Clock size={16} className="mt-0.5 shrink-0" /> <span>{settings.hours}</span>
+          </p>
+        )}
       </footer>
 
       {/* Barra do carrinho */}

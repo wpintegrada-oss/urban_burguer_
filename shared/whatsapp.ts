@@ -18,7 +18,7 @@ export function customerWhatsappUrl(phone: string, message?: string): string {
     : `https://wa.me/${digits}`;
 }
 
-export function buildOrderMessage(order: Order, siteOrigin: string): string {
+export function buildOrderMessage(order: Order): string {
   const lines: string[] = [];
   lines.push(`*Novo pedido #${order.id}* 🍔`);
   lines.push("");
@@ -43,8 +43,6 @@ export function buildOrderMessage(order: Order, siteOrigin: string): string {
   }
   lines.push(pay);
   if (order.notes) lines.push(`*Observações:* ${order.notes}`);
-  lines.push("");
-  lines.push(`Acompanhe: ${siteOrigin}/pedido/${order.id}`);
   return lines.join("\n");
 }
 
@@ -52,23 +50,23 @@ export function buildOrderMessage(order: Order, siteOrigin: string): string {
 export function buildStatusMessage(
   order: Pick<Order, "id" | "customer" | "total">,
   status: OrderStatus,
-  siteOrigin: string,
   storeName: string,
+  instagram: string,
 ): string {
   const first = order.customer.name.trim().split(/\s+/)[0] || "cliente";
   const nome = first.charAt(0).toUpperCase() + first.slice(1);
   const code = `#${order.id}`;
-  const track = `Acompanhe: ${siteOrigin}/pedido/${order.id}`;
+  const ig = instagram ? `\nSiga a gente no Instagram: https://www.instagram.com/${instagram}` : "";
 
   switch (status) {
     case "recebido":
-      return `Olá, ${nome}! Recebemos o seu pedido ${code} na ${storeName} 🍔 Total: ${brl(order.total)}. Já vamos começar a preparar!\n${track}`;
+      return `Olá, ${nome}! Recebemos o seu pedido ${code} na ${storeName} 🍔 Total: ${brl(order.total)}. Já vamos começar a preparar!${ig}`;
     case "preparando":
-      return `${nome}, seu pedido ${code} já está na chapa! 🔥 Em breve ele sai para entrega.\n${track}`;
+      return `${nome}, seu pedido ${code} já está na chapa! 🔥 Em breve ele sai para entrega.${ig}`;
     case "saiu_entrega":
-      return `${nome}, seu pedido ${code} saiu para entrega! 🛵 O entregador já está a caminho, fique de olho.\n${track}`;
+      return `${nome}, seu pedido ${code} saiu para entrega! 🛵 O entregador já está a caminho, fique de olho.${ig}`;
     case "entregue":
-      return `Pedido ${code} entregue! 😋 Bom apetite, ${nome}, e obrigado por pedir na ${storeName}!`;
+      return `Pedido ${code} entregue! 😋 Bom apetite, ${nome}, e obrigado por pedir na ${storeName}!${ig}`;
     case "cancelado":
       return `Olá, ${nome}. Infelizmente o seu pedido ${code} foi cancelado. Se tiver qualquer dúvida, é só responder esta mensagem.`;
   }

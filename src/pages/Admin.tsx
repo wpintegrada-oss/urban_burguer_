@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock, LogOut, MessageCircle, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
-import { PAYMENT_LABEL, STATUS_STEPS } from "@shared/menu";
+import { DEFAULT_SETTINGS, PAYMENT_LABEL, STATUS_STEPS } from "@shared/menu";
 import { brl } from "@shared/pricing";
 import { buildStatusMessage, customerWhatsappUrl } from "@shared/whatsapp";
 import type { Order, OrderStatus } from "@shared/types";
@@ -127,7 +127,7 @@ function PinGate({ onUnlock }: { onUnlock: (pin: string) => void }) {
   );
 }
 
-function OrdersTab({ pin, onLogout, storeName }: { pin: string; onLogout: () => void; storeName: string }) {
+function OrdersTab({ pin, onLogout, storeName, instagram }: { pin: string; onLogout: () => void; storeName: string; instagram: string }) {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<OrderStatus | "todos">("todos");
   const [sound, setSound] = useState(true);
@@ -171,7 +171,7 @@ function OrdersTab({ pin, onLogout, storeName }: { pin: string; onLogout: () => 
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
       const url = customerWhatsappUrl(
         updated.customer.phone,
-        buildStatusMessage(updated, updated.status, window.location.origin, storeName),
+        buildStatusMessage(updated, updated.status, storeName, instagram),
       );
       toast.success(`Pedido #${updated.id} atualizado`, {
         duration: 15000,
@@ -320,7 +320,7 @@ function OrdersTab({ pin, onLogout, storeName }: { pin: string; onLogout: () => 
               <a
                 href={customerWhatsappUrl(
                   o.customer.phone,
-                  buildStatusMessage(o, o.status, window.location.origin, storeName),
+                  buildStatusMessage(o, o.status, storeName, instagram),
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -373,7 +373,7 @@ function Shell({ pin, onLogout }: { pin: string; onLogout: () => void }) {
 
       {/* Pedidos fica montado (só escondido) para continuar atualizando e tocando o aviso. */}
       <div hidden={tab !== "pedidos"}>
-        <OrdersTab pin={pin} onLogout={onLogout} storeName={menu?.settings.name ?? "Urban Burguer"} />
+        <OrdersTab pin={pin} onLogout={onLogout} storeName={menu?.settings.name ?? "Urban Burguer"} instagram={menu?.settings.instagram ?? DEFAULT_SETTINGS.instagram} />
       </div>
 
       {tab !== "pedidos" &&

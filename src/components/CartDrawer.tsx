@@ -116,7 +116,7 @@ export function CartDrawer() {
 
   // ── Tela de sucesso ──────────────────────────────────────────────────────
   if (placed) {
-    const waUrl = whatsappLink(settings.whatsappNumber, buildOrderMessage(placed, window.location.origin));
+    const waUrl = whatsappLink(settings.whatsappNumber, buildOrderMessage(placed));
     return (
       <Modal open={cart.open} onClose={close} title="Pedido enviado!" testId="order-success">
         <div className="space-y-5 p-6 text-center">

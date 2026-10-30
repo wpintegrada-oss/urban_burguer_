@@ -134,6 +134,15 @@ export function parseSettings(raw: unknown): Parsed<Settings> {
     display = `(${local.slice(0, 2)}) ${local.slice(2, local.length - 4)}-${local.slice(-4)}`;
   }
 
+  // Instagram: aceita @usuario, usuario ou o link completo; guarda só o usuário.
+  const igRaw = str(b.instagram, 120)
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
+    .replace(/^@/, "")
+    .split(/[/?#]/)[0];
+  if (igRaw !== "" && !/^[A-Za-z0-9._]{1,30}$/.test(igRaw)) {
+    return fail("Instagram inválido: use só o nome de usuário, ex.: urbanburguer");
+  }
+
   return {
     ok: true,
     value: {
@@ -145,6 +154,8 @@ export function parseSettings(raw: unknown): Parsed<Settings> {
       heroImage: img,
       whatsappNumber: digits,
       whatsappDisplay: display,
+      instagram: igRaw,
+      hours: str(b.hours, 400),
     },
   };
 }

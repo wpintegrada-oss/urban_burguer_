@@ -87,6 +87,8 @@ export function toSettings(d: Document | null): Settings {
     heroImage: pick("heroImage"),
     whatsappNumber: pick("whatsappNumber"),
     whatsappDisplay: pick("whatsappDisplay"),
+    instagram: pick("instagram"),
+    hours: pick("hours"),
   };
 }
 
