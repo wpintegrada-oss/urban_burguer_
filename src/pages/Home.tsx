@@ -216,35 +216,57 @@ export default function Home() {
         })}
       </main>
 
-      <footer className="mx-auto mt-14 max-w-5xl px-4 text-center text-sm text-muted">
-        <p className="font-heading font-bold text-white">{settings.name}</p>
-        <a
-          href={`https://wa.me/${settings.whatsappNumber}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-flex items-center gap-1.5 text-brand-soft hover:underline"
-        >
-          <MessageCircle size={16} /> {settings.whatsappDisplay}
-        </a>
-        {settings.instagram && (
+      <footer className="mx-auto mt-14 flex max-w-5xl flex-col gap-6 px-4 text-sm text-muted sm:flex-row sm:items-start sm:justify-between">
+        <div data-testid="footer-credit" className="text-center sm:text-left">
+          <p className="text-xs uppercase tracking-wide">Desenvolvido por</p>
+          <p className="font-heading font-bold text-white">WP Integrada</p>
           <a
-            href={`https://instagram.com/${settings.instagram}`}
+            href="https://wa.me/5586998030143"
             target="_blank"
             rel="noopener noreferrer"
-            data-testid="footer-instagram"
-            className="mt-2 flex items-center justify-center gap-1.5 text-brand-soft hover:underline"
+            className="mt-2 inline-flex items-center gap-1.5 text-brand-soft hover:underline"
           >
-            <Instagram size={16} /> @{settings.instagram}
+            <MessageCircle size={16} /> (86) 99803-0143
           </a>
-        )}
-        {settings.hours && (
-          <p
-            data-testid="footer-hours"
-            className="mx-auto mt-3 flex max-w-xs items-start justify-center gap-1.5 whitespace-pre-line text-left"
+          <a
+            href="https://www.instagram.com/wp.integrada"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center justify-center gap-1.5 text-brand-soft hover:underline sm:justify-start"
           >
-            <Clock size={16} className="mt-0.5 shrink-0" /> <span>{settings.hours}</span>
-          </p>
-        )}
+            <Instagram size={16} /> @wp.integrada
+          </a>
+        </div>
+        <div className="text-center sm:text-right">
+          <p className="font-heading font-bold text-white">{settings.name}</p>
+          <a
+            href={`https://wa.me/${settings.whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-flex items-center gap-1.5 text-brand-soft hover:underline"
+          >
+            <MessageCircle size={16} /> {settings.whatsappDisplay}
+          </a>
+          {settings.instagram && (
+            <a
+              href={`https://instagram.com/${settings.instagram}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="footer-instagram"
+              className="mt-2 flex items-center justify-center gap-1.5 text-brand-soft hover:underline sm:justify-end"
+            >
+              <Instagram size={16} /> @{settings.instagram}
+            </a>
+          )}
+          {settings.hours && (
+            <p
+              data-testid="footer-hours"
+              className="mt-3 flex max-w-xs items-start justify-center gap-1.5 whitespace-pre-line text-left sm:ml-auto sm:justify-end"
+            >
+              <Clock size={16} className="mt-0.5 shrink-0" /> <span>{settings.hours}</span>
+            </p>
+          )}
+        </div>
       </footer>
 
       {/* Barra do carrinho */}
