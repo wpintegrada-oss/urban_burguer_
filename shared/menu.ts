@@ -1,75 +1,21 @@
-import type { OrderStatus, PaymentMethod } from "./types";
+import type {
+  Addon,
+  Category,
+  IconName,
+  Menu,
+  MenuItem,
+  OrderStatus,
+  PaymentMethod,
+  Settings,
+} from "./types";
+
+export type { Addon, Category, MenuItem } from "./types";
 
 // ──────────────────────────────────────────────────────────────────────────
-// EDITE AQUI: cardápio, adicionais e dados da loja. O site e a API leem
-// este mesmo arquivo (a API recalcula os preços no servidor).
+// CARDÁPIO INICIAL. Estes dados só são usados para preencher o banco na
+// primeira vez que o site abre (e como reserva se o servidor estiver fora).
+// Depois disso, tudo é editado pelo painel /admin — não precisa mexer aqui.
 // ──────────────────────────────────────────────────────────────────────────
-
-export const STORE = {
-  name: "Urban Burguer",
-  tagline: "Hamburgueria Artesanal",
-  whatsappNumber: "5586998166138",
-  whatsappDisplay: "(86) 99816-6138",
-};
-
-export interface Category {
-  id: string;
-  name: string;
-  icon: "Flame" | "Award" | "UtensilsCrossed" | "Sparkles" | "Layers" | "Boxes" | "Zap" | "GlassWater";
-  description: string;
-}
-
-export interface Addon {
-  id: string;
-  name: string;
-  price: number;
-}
-
-export interface MenuItem {
-  id: string;
-  categoryId: string;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-  badge?: string;
-  addons: string[];
-}
-
-export const CATEGORIES: Category[] = [
-  { id: "especiais", name: "Especiais", icon: "Flame", description: "Burgers artesanais exclusivos com blend premium e molhos especiais da casa" },
-  { id: "classicos", name: "Clássicos", icon: "Award", description: "Receitas icônicas consagradas com sabor inconfundível" },
-  { id: "tradicionais", name: "Tradicionais", icon: "UtensilsCrossed", description: "Os favoritos de sempre preparados com carinho e agilidade" },
-  { id: "combos-especiais", name: "Combos Especiais", icon: "Sparkles", description: "Burger Especial + Batata Frita Crocante + Bebida Gelada" },
-  { id: "combos-tradicionais", name: "Combos Tradicionais", icon: "Layers", description: "Burger Tradicional + Acompanhamento + Refrigerante" },
-  { id: "porcoes", name: "Porções", icon: "Boxes", description: "Petiscos perfeitos para compartilhar ou saborear sozinho" },
-  { id: "batatas-recheadas", name: "Batatas Recheadas", icon: "Zap", description: "Batatas rústicas com cheddar cremoso, bacon crocante e muito mais" },
-  { id: "bebidas", name: "Bebidas", icon: "GlassWater", description: "Refrigerantes, sucos, cervejas e águas bem geladas" },
-];
-
-export const ADDONS: Addon[] = [
-  { id: "carne-extra", name: "Blend Extra 150g", price: 9.0 },
-  { id: "bacon-extra", name: "Bacon Artesanal Extra", price: 5.0 },
-  { id: "cheddar-extra", name: "Cheddar Cremoso Extra", price: 4.5 },
-  { id: "queijo-gouda-extra", name: "Queijo Gouda Fatiado", price: 5.5 },
-  { id: "ovo", name: "Ovo Frito na Chapa", price: 3.0 },
-  { id: "cebola-caramelizada", name: "Cebola Caramelizada", price: 3.5 },
-  { id: "maionese-defumada", name: "Pote Maionese Defumada (50ml)", price: 3.5 },
-  { id: "molho-alho", name: "Pote Molho Especial de Alho (50ml)", price: 3.5 },
-  { id: "bacon-na-batata", name: "Turbinar com Bacon na Batata", price: 4.0 },
-  { id: "cheddar-na-batata", name: "Turbinar com Cheddar na Batata", price: 4.0 },
-  // Adicionais citados nos itens mas que não estavam no catálogo original.
-  // Nomes e PREÇOS abaixo são provisórios — confira com a loja.
-  { id: "molho-especial", name: "Pote Molho Especial da Casa (50ml)", price: 3.5 },
-  { id: "molho-defumado", name: "Pote Molho Defumado (50ml)", price: 3.5 },
-  { id: "queijo-extra", name: "Queijo Prato Extra", price: 4.0 },
-  { id: "cebola-roxa", name: "Cebola Roxa", price: 2.5 },
-  { id: "maionese-verde", name: "Pote Maionese Verde (50ml)", price: 3.5 },
-  { id: "turbinar-refrigerante", name: "Turbinar o Refrigerante", price: 3.0 },
-  { id: "dobro-de-bacon", name: "Dobro de Bacon", price: 5.0 },
-  { id: "molho-extra-alho", name: "Molho de Alho Extra (50ml)", price: 3.5 },
-  { id: "molho-extra-barbecue", name: "Molho Barbecue Extra (50ml)", price: 3.5 },
-];
 
 const IMG = {
   burgerA: "https://images.pexels.com/photos/18987002/pexels-photo-18987002.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
@@ -81,9 +27,65 @@ const IMG = {
   colaIce: "https://images.pexels.com/photos/33469209/pexels-photo-33469209.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
 };
 
-export const HERO_IMAGE = IMG.burgerA;
+export const DEFAULT_SETTINGS: Settings = {
+  name: "Urban Burguer",
+  tagline: "Hamburgueria Artesanal",
+  heroTitle: "Burgers feitos na chapa,",
+  heroAccent: "entregues quentes.",
+  heroSubtitle:
+    "Peça online seus burgers, combos, porções e batatas recheadas. Entrega rápida e confirmação pelo WhatsApp.",
+  heroImage: IMG.burgerA,
+  whatsappNumber: "5586998166138",
+  whatsappDisplay: "(86) 99816-6138",
+};
 
-export const ITEMS: MenuItem[] = [
+const cat = (id: string, name: string, icon: IconName, description: string): Omit<Category, "order" | "active"> => ({
+  id,
+  name,
+  icon,
+  description,
+});
+
+export const DEFAULT_CATEGORIES: Category[] = [
+  cat("especiais", "Especiais", "Flame", "Burgers artesanais exclusivos com blend premium e molhos especiais da casa"),
+  cat("classicos", "Clássicos", "Award", "Receitas icônicas consagradas com sabor inconfundível"),
+  cat("tradicionais", "Tradicionais", "UtensilsCrossed", "Os favoritos de sempre preparados com carinho e agilidade"),
+  cat("combos-especiais", "Combos Especiais", "Sparkles", "Burger Especial + Batata Frita Crocante + Bebida Gelada"),
+  cat("combos-tradicionais", "Combos Tradicionais", "Layers", "Burger Tradicional + Acompanhamento + Refrigerante"),
+  cat("porcoes", "Porções", "Boxes", "Petiscos perfeitos para compartilhar ou saborear sozinho"),
+  cat("batatas-recheadas", "Batatas Recheadas", "Zap", "Batatas rústicas com cheddar cremoso, bacon crocante e muito mais"),
+  cat("bebidas", "Bebidas", "GlassWater", "Refrigerantes, sucos, cervejas e águas bem geladas"),
+].map((c, i) => ({ ...c, order: (i + 1) * 10, active: true }));
+
+const addon = (id: string, name: string, price: number): Addon => ({ id, name, price, active: true });
+
+export const DEFAULT_ADDONS: Addon[] = [
+  addon("carne-extra", "Blend Extra 150g", 9.0),
+  addon("bacon-extra", "Bacon Artesanal Extra", 5.0),
+  addon("cheddar-extra", "Cheddar Cremoso Extra", 4.5),
+  addon("queijo-gouda-extra", "Queijo Gouda Fatiado", 5.5),
+  addon("ovo", "Ovo Frito na Chapa", 3.0),
+  addon("cebola-caramelizada", "Cebola Caramelizada", 3.5),
+  addon("maionese-defumada", "Pote Maionese Defumada (50ml)", 3.5),
+  addon("molho-alho", "Pote Molho Especial de Alho (50ml)", 3.5),
+  addon("bacon-na-batata", "Turbinar com Bacon na Batata", 4.0),
+  addon("cheddar-na-batata", "Turbinar com Cheddar na Batata", 4.0),
+  // Adicionais citados nos itens mas que não estavam no catálogo original.
+  // Nomes e PREÇOS provisórios — ajuste pelo painel (aba Adicionais).
+  addon("molho-especial", "Pote Molho Especial da Casa (50ml)", 3.5),
+  addon("molho-defumado", "Pote Molho Defumado (50ml)", 3.5),
+  addon("queijo-extra", "Queijo Prato Extra", 4.0),
+  addon("cebola-roxa", "Cebola Roxa", 2.5),
+  addon("maionese-verde", "Pote Maionese Verde (50ml)", 3.5),
+  addon("turbinar-refrigerante", "Turbinar o Refrigerante", 3.0),
+  addon("dobro-de-bacon", "Dobro de Bacon", 5.0),
+  addon("molho-extra-alho", "Molho de Alho Extra (50ml)", 3.5),
+  addon("molho-extra-barbecue", "Molho Barbecue Extra (50ml)", 3.5),
+];
+
+type RawItem = Omit<MenuItem, "order" | "active" | "badge" | "promoPrice" | "promoUntil"> & { badge?: string };
+
+const RAW_ITEMS: RawItem[] = [
   {
     id: "esp-urban-monster",
     categoryId: "especiais",
@@ -180,8 +182,25 @@ export const ITEMS: MenuItem[] = [
   },
 ];
 
-export const ADDON_BY_ID: Record<string, Addon> = Object.fromEntries(ADDONS.map((a) => [a.id, a]));
-export const ITEM_BY_ID: Record<string, MenuItem> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+export const DEFAULT_PRODUCTS: MenuItem[] = RAW_ITEMS.map((p, i) => ({
+  ...p,
+  badge: p.badge ?? "",
+  promoPrice: null,
+  promoUntil: "",
+  order: (i + 1) * 10,
+  active: true,
+}));
+
+export const DEFAULT_MENU: Menu = {
+  categories: DEFAULT_CATEGORIES,
+  products: DEFAULT_PRODUCTS,
+  addons: DEFAULT_ADDONS,
+  settings: DEFAULT_SETTINGS,
+};
+
+// ──────────────────────────────────────────────────────────────────────────
+// Partes fixas (não editáveis pelo painel)
+// ──────────────────────────────────────────────────────────────────────────
 
 export const PAYMENT_METHODS: { id: PaymentMethod; name: string; desc: string; icon: "QrCode" | "CreditCard" | "Banknote" }[] = [
   { id: "pix", name: "PIX (Instantâneo)", desc: "Chave PIX enviada no WhatsApp", icon: "QrCode" },

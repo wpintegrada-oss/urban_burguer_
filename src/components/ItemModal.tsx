@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { ADDON_BY_ID, type MenuItem } from "@shared/menu";
-import { brl, round2, unitPriceOf } from "@shared/pricing";
+import type { MenuItem } from "@shared/types";
+import { brl, effectivePrice, isPromoActive, round2, unitPriceOf } from "@shared/pricing";
 import { useCart } from "@/lib/cart";
+import { useMenu } from "@/lib/menu";
 import { Modal } from "./Modal";
+import { FoodImage, Price } from "./Visuals";
 
 export function ItemModal({ item, onClose }: { item: MenuItem | null; onClose: () => void }) {
   // `key` no pai reinicia o estado a cada item aberto.
@@ -13,11 +15,13 @@ export function ItemModal({ item, onClose }: { item: MenuItem | null; onClose: (
 
 function ItemModalBody({ item, onClose }: { item: MenuItem; onClose: () => void }) {
   const cart = useCart();
+  const { index } = useMenu();
   const [qty, setQty] = useState(1);
   const [selected, setSelected] = useState<string[]>([]);
   const [obs, setObs] = useState("");
 
-  const unit = unitPriceOf(item.id, selected) ?? item.price;
+  const addonIds = item.addons.filter((id) => index.addonById[id]);
+  const unit = unitPriceOf(index, item.id, selected) ?? effectivePrice(item);
   const total = round2(unit * qty);
 
   const toggle = (id: string) =>
@@ -71,24 +75,36 @@ function ItemModalBody({ item, onClose }: { item: MenuItem; onClose: () => void 
         </div>
       }
     >
-      <img src={item.image} alt={item.name} className="aspect-[16/10] w-full object-cover" />
+      <FoodImage src={item.image} alt={item.name} className="aspect-[16/10] w-full" />
       <div className="space-y-5 p-5">
         <div>
           <div className="flex items-start justify-between gap-3">
-            <p className="font-heading text-2xl font-bold text-brand">{brl(item.price)}</p>
-            {item.badge && (
-              <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">{item.badge}</span>
-            )}
+            <Price item={item} className="font-heading text-2xl font-bold text-brand" />
+            <div className="flex flex-wrap justify-end gap-1.5">
+              {isPromoActive(item) && (
+                <span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white">Promoção</span>
+              )}
+              {item.badge && (
+                <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">{item.badge}</span>
+              )}
+            </div>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
+          {item.description && (
+            <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
+          )}
+          {isPromoActive(item) && item.promoUntil && (
+            <p className="mt-2 text-xs text-emerald-300">
+              Promoção válida até {item.promoUntil.split("-").reverse().join("/")}
+            </p>
+          )}
         </div>
 
-        {item.addons.length > 0 && (
+        {addonIds.length > 0 && (
           <fieldset>
             <legend className="mb-2 text-sm font-bold">Adicionais</legend>
             <div className="space-y-2">
-              {item.addons.map((id) => {
-                const addon = ADDON_BY_ID[id];
+              {addonIds.map((id) => {
+                const addon = index.addonById[id];
                 const checked = selected.includes(id);
                 return (
                   <label

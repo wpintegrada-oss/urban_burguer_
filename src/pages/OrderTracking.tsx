@@ -1,11 +1,12 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageCircle } from "lucide-react";
-import { PAYMENT_LABEL, STATUS_STEPS, STORE } from "@shared/menu";
+import { PAYMENT_LABEL, STATUS_STEPS } from "@shared/menu";
 import { brl } from "@shared/pricing";
 import { whatsappLink } from "@shared/whatsapp";
 import type { PublicOrder } from "@shared/types";
 import { ApiError, apiGet } from "@/lib/api";
+import { useMenu } from "@/lib/menu";
 import { STATUS_ICONS, StatusBadge } from "@/components/StatusBadge";
 
 const FLOW = STATUS_STEPS.filter((s) => s.id !== "cancelado");
@@ -13,6 +14,7 @@ const FLOW = STATUS_STEPS.filter((s) => s.id !== "cancelado");
 export default function OrderTracking() {
   const { id = "" } = useParams();
   const code = id.toUpperCase();
+  const { settings } = useMenu();
 
   const { data, error, isPending } = useQuery({
     queryKey: ["order", code],
@@ -23,7 +25,7 @@ export default function OrderTracking() {
   });
 
   const notFound = error instanceof ApiError && error.status === 404;
-  const waUrl = whatsappLink(`Olá! Quero falar sobre o meu pedido #${code}.`);
+  const waUrl = whatsappLink(settings.whatsappNumber, `Olá! Quero falar sobre o meu pedido #${code}.`);
 
   return (
     <div className="mx-auto min-h-dvh max-w-lg px-4 py-6">
@@ -111,7 +113,7 @@ export default function OrderTracking() {
         data-testid="tracking-whatsapp-button"
         className="mt-4 flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-5 py-3 font-bold transition hover:bg-emerald-400"
       >
-        <MessageCircle size={20} /> Falar com a {STORE.name}
+        <MessageCircle size={20} /> Falar com a {settings.name}
       </a>
     </div>
   );

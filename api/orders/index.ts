@@ -3,6 +3,8 @@ import { randomInt } from "node:crypto";
 import { ordersCollection } from "../_lib/db";
 import { isAdmin } from "../_lib/auth";
 import { validateOrder } from "../_lib/validate";
+import { loadMenu } from "../_lib/menuStore";
+import { indexMenu } from "../../shared/pricing";
 import { handleError } from "../_lib/http";
 import { STATUS_IDS } from "../../shared/menu";
 import type { Order, OrderStatus } from "../../shared/types";
@@ -15,7 +17,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // POST /api/orders — cliente cria um pedido
     if (req.method === "POST") {
-      const parsed = validateOrder(req.body);
+      // Preços e disponibilidade vêm sempre do cardápio ATIVO no banco.
+      const parsed = validateOrder(req.body, indexMenu(await loadMenu(true)));
       if (!parsed.ok) return res.status(400).json({ error: parsed.error });
 
       const col = await ordersCollection();

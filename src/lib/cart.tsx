@@ -7,8 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import { unitPriceOf, round2 } from "@shared/pricing";
-import { ITEM_BY_ID } from "@shared/menu";
+import { useMenu } from "@/lib/menu";
 
 export interface CartLine {
   key: string;
@@ -22,9 +23,12 @@ type Action =
   | { type: "add"; line: Omit<CartLine, "key"> }
   | { type: "setQty"; key: string; qty: number }
   | { type: "remove"; key: string }
+  | { type: "replaceAll"; lines: CartLine[] }
   | { type: "clear" };
 
-const STORAGE_KEY = "ub_cart_v1";
+const STORAGE_KEY = "ub_cart_v2";
+
+const newKey = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 function load(): CartLine[] {
   try {
@@ -32,10 +36,21 @@ function load(): CartLine[] {
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    // Descarta linhas de itens que não existem mais no cardápio.
-    return (parsed as CartLine[]).filter(
-      (l) => ITEM_BY_ID[l.itemId] && unitPriceOf(l.itemId, l.addonIds ?? []) !== null,
-    );
+    return (parsed as Partial<CartLine>[])
+      .filter(
+        (l) =>
+          typeof l.itemId === "string" &&
+          typeof l.qty === "number" &&
+          l.qty > 0 &&
+          Array.isArray(l.addonIds),
+      )
+      .map((l) => ({
+        key: typeof l.key === "string" ? l.key : newKey(),
+        itemId: l.itemId as string,
+        qty: Math.min(20, Math.floor(l.qty as number)),
+        addonIds: (l.addonIds as unknown[]).map(String),
+        obs: typeof l.obs === "string" ? l.obs : "",
+      }));
   } catch {
     return [];
   }
@@ -53,7 +68,7 @@ function reducer(state: CartLine[], action: Action): CartLine[] {
           l.key === existing.key ? { ...l, qty: Math.min(20, l.qty + action.line.qty) } : l,
         );
       }
-      return [...state, { ...action.line, key: Math.random().toString(36).slice(2) + Date.now().toString(36) }];
+      return [...state, { ...action.line, key: newKey() }];
     }
     case "setQty":
       return state
@@ -61,6 +76,8 @@ function reducer(state: CartLine[], action: Action): CartLine[] {
         .filter((l) => l.qty > 0);
     case "remove":
       return state.filter((l) => l.key !== action.key);
+    case "replaceAll":
+      return action.lines;
     case "clear":
       return [];
   }
@@ -83,6 +100,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, dispatch] = useReducer(reducer, undefined, load);
   const [open, setOpen] = useState(false);
+  const { index, source } = useMenu();
 
   useEffect(() => {
     try {
@@ -92,9 +110,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [lines]);
 
+  // Quando o cardápio atual chega do servidor, tira do carrinho o que saiu do ar
+  // (produto desativado/excluído) e os adicionais que não existem mais.
+  useEffect(() => {
+    if (source !== "api") return;
+    let changed = 0;
+    const next: CartLine[] = [];
+    for (const l of lines) {
+      const item = index.itemById[l.itemId];
+      if (!item) {
+        changed++;
+        continue;
+      }
+      const addonIds = l.addonIds.filter((id) => item.addons.includes(id) && index.addonById[id]);
+      if (addonIds.length !== l.addonIds.length) changed++;
+      next.push({ ...l, addonIds });
+    }
+    if (changed > 0) {
+      dispatch({ type: "replaceAll", lines: next });
+      toast.info("O cardápio mudou: ajustamos o seu carrinho.");
+    }
+  }, [source, index, lines]);
+
   const value = useMemo<CartContextValue>(() => {
     const total = round2(
-      lines.reduce((s, l) => s + (unitPriceOf(l.itemId, l.addonIds) ?? 0) * l.qty, 0),
+      lines.reduce((s, l) => s + (unitPriceOf(index, l.itemId, l.addonIds) ?? 0) * l.qty, 0),
     );
     return {
       lines,
@@ -107,7 +147,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       open,
       setOpen,
     };
-  }, [lines, open]);
+  }, [lines, open, index]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

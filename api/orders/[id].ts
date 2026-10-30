@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === "GET") {
       const order = await col.findOne({ id }, { projection: { _id: 0 } });
       if (!order) return res.status(404).json({ error: "Pedido não encontrado" });
-      return res.status(200).json(toPublic(order));
+      return res.status(200).json(toPublic(order as unknown as Order));
     }
 
     // PATCH /api/orders/UB-XXXX — admin muda o status

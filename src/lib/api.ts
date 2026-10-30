@@ -6,6 +6,8 @@ export class ApiError extends Error {
   }
 }
 
+type Headers = Record<string, string>;
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
@@ -24,11 +26,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export const apiGet = <T,>(path: string, headers?: Record<string, string>) =>
-  request<T>(path, { headers });
+export const apiGet = <T,>(path: string, headers?: Headers) => request<T>(path, { headers });
 
-export const apiPost = <T,>(path: string, data: unknown) =>
-  request<T>(path, { method: "POST", body: JSON.stringify(data) });
+export const apiPost = <T,>(path: string, data: unknown, headers?: Headers) =>
+  request<T>(path, { method: "POST", body: JSON.stringify(data), headers });
 
-export const apiPatch = <T,>(path: string, data: unknown, headers?: Record<string, string>) =>
+export const apiPut = <T,>(path: string, data: unknown, headers?: Headers) =>
+  request<T>(path, { method: "PUT", body: JSON.stringify(data), headers });
+
+export const apiPatch = <T,>(path: string, data: unknown, headers?: Headers) =>
   request<T>(path, { method: "PATCH", body: JSON.stringify(data), headers });
+
+export const apiDelete = <T,>(path: string, headers?: Headers) =>
+  request<T>(path, { method: "DELETE", headers });

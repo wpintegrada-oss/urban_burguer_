@@ -1,14 +1,19 @@
-import { ITEM_BY_ID, ADDON_BY_ID, PAYMENT_METHODS } from "../../shared/menu";
-import { round2, unitPriceOf } from "../../shared/pricing";
+import { PAYMENT_METHODS } from "../../shared/menu";
+import { round2, unitPriceOf, type MenuIndex } from "../../shared/pricing";
 import type { CreateOrderInput, Order, OrderLine, PaymentMethod } from "../../shared/types";
 
-type Result = { ok: true; value: Omit<Order, "id" | "status" | "createdAt" | "updatedAt"> } | { ok: false; error: string };
+type Result =
+  | { ok: true; value: Omit<Order, "id" | "status" | "createdAt" | "updatedAt"> }
+  | { ok: false; error: string };
 
 const str = (v: unknown, max: number): string =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
 
-/** Valida o corpo do pedido e RECALCULA todos os preços a partir do cardápio do servidor. */
-export function validateOrder(body: unknown): Result {
+/**
+ * Valida o corpo do pedido e RECALCULA todos os preços (inclusive promoções)
+ * a partir do cardápio ATIVO do servidor. Itens desativados são recusados.
+ */
+export function validateOrder(body: unknown, index: MenuIndex): Result {
   if (typeof body !== "object" || body === null) return { ok: false, error: "Corpo inválido" };
   const b = body as Partial<CreateOrderInput>;
 
@@ -38,21 +43,28 @@ export function validateOrder(body: unknown): Result {
 
   const lines: OrderLine[] = [];
   for (const raw of b.items) {
-    const item = ITEM_BY_ID[String(raw?.itemId)];
-    if (!item) return { ok: false, error: "Item inexistente no cardápio" };
+    const item = index.itemById[String(raw?.itemId)];
+    if (!item) {
+      return {
+        ok: false,
+        error: "Um item do seu carrinho não está mais disponível. Atualize a página e confira o carrinho.",
+      };
+    }
     const qty = Number(raw.qty);
     if (!Number.isInteger(qty) || qty < 1 || qty > 20) {
       return { ok: false, error: "Quantidade inválida" };
     }
     const addonIds = Array.isArray(raw.addonIds) ? [...new Set(raw.addonIds.map(String))] : [];
-    const unit = unitPriceOf(item.id, addonIds);
-    if (unit === null) return { ok: false, error: `Adicional inválido para ${item.name}` };
+    const unit = unitPriceOf(index, item.id, addonIds);
+    if (unit === null) {
+      return { ok: false, error: `Um adicional de ${item.name} não está mais disponível. Atualize a página.` };
+    }
     lines.push({
       itemId: item.id,
       name: item.name,
       qty,
       unitPrice: unit,
-      addons: addonIds.map((id) => ({ id, name: ADDON_BY_ID[id].name, price: ADDON_BY_ID[id].price })),
+      addons: addonIds.map((id) => ({ id, name: index.addonById[id].name, price: index.addonById[id].price })),
       obs: str(raw.obs, 200),
       lineTotal: round2(unit * qty),
     });

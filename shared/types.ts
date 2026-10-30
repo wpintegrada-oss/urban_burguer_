@@ -55,3 +55,80 @@ export interface CreateOrderInput {
   notes?: string;
   items: { itemId: string; qty: number; addonIds: string[]; obs?: string }[];
 }
+
+// ── Cardápio editável (guardado no banco) ───────────────────────────────────
+
+export type IconName =
+  | "Flame"
+  | "Award"
+  | "UtensilsCrossed"
+  | "Sparkles"
+  | "Layers"
+  | "Boxes"
+  | "Zap"
+  | "GlassWater";
+
+export const ICON_NAMES: IconName[] = [
+  "Flame",
+  "Award",
+  "UtensilsCrossed",
+  "Sparkles",
+  "Layers",
+  "Boxes",
+  "Zap",
+  "GlassWater",
+];
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: IconName;
+  description: string;
+  order: number;
+  active: boolean;
+}
+
+export interface Addon {
+  id: string;
+  name: string;
+  price: number;
+  active: boolean;
+}
+
+export interface MenuItem {
+  id: string;
+  categoryId: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  badge: string; // vazio = sem selo
+  addons: string[]; // ids de adicionais
+  promoPrice: number | null; // preço promocional (null = sem promoção)
+  promoUntil: string; // "AAAA-MM-DD" último dia da promoção; vazio = sem data final
+  order: number;
+  active: boolean;
+}
+
+export interface Settings {
+  name: string;
+  tagline: string;
+  heroTitle: string;
+  heroAccent: string;
+  heroSubtitle: string;
+  heroImage: string;
+  whatsappNumber: string; // só dígitos, com 55, ex.: 5586998166138
+  whatsappDisplay: string;
+}
+
+export interface Menu {
+  categories: Category[];
+  products: MenuItem[];
+  addons: Addon[];
+  settings: Settings;
+}
+
+/** O que a API entrega ao site: o cardápio + a data de hoje (fuso de São Paulo), para as promoções valerem igual no servidor e na tela. */
+export interface PublicMenu extends Menu {
+  today: string;
+}

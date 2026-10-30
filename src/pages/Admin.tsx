@@ -9,6 +9,11 @@ import { buildStatusMessage, customerWhatsappUrl } from "@shared/whatsapp";
 import type { Order, OrderStatus } from "@shared/types";
 import { ApiError, apiGet, apiPatch } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
+import { useAdminMenu } from "@/pages/admin/useAdmin";
+import { ProductsTab } from "@/pages/admin/ProductsTab";
+import { CategoriesTab } from "@/pages/admin/CategoriesTab";
+import { AddonsTab } from "@/pages/admin/AddonsTab";
+import { StoreTab } from "@/pages/admin/StoreTab";
 
 const PIN_KEY = "ub_admin_pin";
 const EMPTY_ORDERS: Order[] = [];
@@ -60,7 +65,7 @@ export default function Admin() {
     setPin("");
   };
   return pin ? (
-    <Dashboard pin={pin} onLogout={logout} />
+    <Shell pin={pin} onLogout={logout} />
   ) : (
     <PinGate
       onUnlock={(p) => {
@@ -122,7 +127,7 @@ function PinGate({ onUnlock }: { onUnlock: (pin: string) => void }) {
   );
 }
 
-function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
+function OrdersTab({ pin, onLogout, storeName }: { pin: string; onLogout: () => void; storeName: string }) {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<OrderStatus | "todos">("todos");
   const [sound, setSound] = useState(true);
@@ -166,7 +171,7 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
       const url = customerWhatsappUrl(
         updated.customer.phone,
-        buildStatusMessage(updated, updated.status, window.location.origin),
+        buildStatusMessage(updated, updated.status, window.location.origin, storeName),
       );
       toast.success(`Pedido #${updated.id} atualizado`, {
         duration: 15000,
@@ -315,7 +320,7 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
               <a
                 href={customerWhatsappUrl(
                   o.customer.phone,
-                  buildStatusMessage(o, o.status, window.location.origin),
+                  buildStatusMessage(o, o.status, window.location.origin, storeName),
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -328,6 +333,60 @@ function Dashboard({ pin, onLogout }: { pin: string; onLogout: () => void }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+type Tab = "pedidos" | "produtos" | "categorias" | "adicionais" | "loja";
+const TABS: { id: Tab; label: string }[] = [
+  { id: "pedidos", label: "Pedidos" },
+  { id: "produtos", label: "Produtos" },
+  { id: "categorias", label: "Categorias" },
+  { id: "adicionais", label: "Adicionais" },
+  { id: "loja", label: "Loja" },
+];
+
+function Shell({ pin, onLogout }: { pin: string; onLogout: () => void }) {
+  const [tab, setTab] = useState<Tab>("pedidos");
+  const menuQ = useAdminMenu(pin, onLogout);
+  const menu = menuQ.data;
+
+  return (
+    <div>
+      <nav className="sticky top-0 z-20 border-b border-line bg-ink/90 backdrop-blur-xl">
+        <div className="no-scrollbar mx-auto flex max-w-5xl gap-2 overflow-x-auto px-4 py-3">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              data-testid={`admin-tab-${t.id}`}
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold ${
+                tab === t.id ? "bg-brand text-white" : "bg-chip text-zinc-300 hover:bg-panel-hover"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* Pedidos fica montado (só escondido) para continuar atualizando e tocando o aviso. */}
+      <div hidden={tab !== "pedidos"}>
+        <OrdersTab pin={pin} onLogout={onLogout} storeName={menu?.settings.name ?? "Urban Burguer"} />
+      </div>
+
+      {tab !== "pedidos" &&
+        (menu ? (
+          <div className="mx-auto max-w-5xl px-4 py-6">
+            {tab === "produtos" && <ProductsTab pin={pin} menu={menu} />}
+            {tab === "categorias" && <CategoriesTab pin={pin} menu={menu} />}
+            {tab === "adicionais" && <AddonsTab pin={pin} menu={menu} />}
+            {tab === "loja" && <StoreTab pin={pin} settings={menu.settings} />}
+          </div>
+        ) : (
+          <p className="p-6 text-muted">{menuQ.error ? menuQ.error.message : "Carregando…"}</p>
+        ))}
     </div>
   );
 }

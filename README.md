@@ -63,3 +63,11 @@ não consegue alterar preços pelo navegador.
   e, se quiser mais proteção, ative o *Vercel Firewall / rate limiting*.
 - O rastreio público mostra só nome (primeiro), itens e total — nunca telefone ou endereço.
 - Não suba `.env*` para o GitHub (já está no `.gitignore`).
+
+## Painel /admin (cardápio editável)
+
+Abas: **Pedidos**, **Produtos**, **Categorias**, **Adicionais** e **Loja**. Dá para criar, editar, excluir e
+ativar/desativar produtos (item desativado some do site e não pode ser pedido), trocar nome, descrição, preço
+e foto (upload ou link), e definir **preço promocional** com data final opcional (aparece com o preço antigo
+riscado e na seção "Promoções"). Na primeira abertura, o banco é preenchido com o cardápio inicial de
+`shared/menu.ts`; depois disso tudo é editado pelo painel. Sem `ADMIN_PIN` na Vercel o painel fica trancado.

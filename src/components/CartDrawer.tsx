@@ -1,16 +1,18 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle, Minus, Plus, Trash2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { ADDON_BY_ID, ITEM_BY_ID, PAYMENT_METHODS } from "@shared/menu";
-import { brl, unitPriceOf } from "@shared/pricing";
+import { PAYMENT_METHODS } from "@shared/menu";
+import { brl, effectivePrice, unitPriceOf } from "@shared/pricing";
 import { buildOrderMessage, whatsappLink } from "@shared/whatsapp";
 import type { CreateOrderInput, Order, PaymentMethod } from "@shared/types";
 import { apiPost } from "@/lib/api";
 import { useCart } from "@/lib/cart";
+import { useMenu } from "@/lib/menu";
 import { Modal } from "./Modal";
 import { PAYMENT_ICONS } from "./icons";
+import { FoodImage } from "./Visuals";
 
 interface FormState {
   name: string;
@@ -60,6 +62,8 @@ function Field({
 
 export function CartDrawer() {
   const cart = useCart();
+  const qc = useQueryClient();
+  const { index, settings } = useMenu();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [placed, setPlaced] = useState<Order | null>(null);
 
@@ -72,7 +76,11 @@ export function CartDrawer() {
       setPlaced(order);
       cart.clear();
     },
-    onError: (err: Error) => toast.error(err.message),
+    onError: (err: Error) => {
+      toast.error(err.message);
+      // Se um item saiu do ar enquanto o cliente montava o pedido, atualiza o cardápio.
+      qc.invalidateQueries({ queryKey: ["menu"] });
+    },
   });
 
   const close = () => {
@@ -108,7 +116,7 @@ export function CartDrawer() {
 
   // ── Tela de sucesso ──────────────────────────────────────────────────────
   if (placed) {
-    const waUrl = whatsappLink(buildOrderMessage(placed, window.location.origin));
+    const waUrl = whatsappLink(settings.whatsappNumber, buildOrderMessage(placed, window.location.origin));
     return (
       <Modal open={cart.open} onClose={close} title="Pedido enviado!" testId="order-success">
         <div className="space-y-5 p-6 text-center">
@@ -177,15 +185,17 @@ export function CartDrawer() {
         <form id="checkout-form" onSubmit={onSubmit} className="space-y-6 p-5">
           <ul className="space-y-3" data-testid="cart-lines">
             {cart.lines.map((l) => {
-              const item = ITEM_BY_ID[l.itemId];
-              const unit = unitPriceOf(l.itemId, l.addonIds) ?? item.price;
+              const item = index.itemById[l.itemId];
+              if (!item) return null;
+              const unit = unitPriceOf(index, l.itemId, l.addonIds) ?? effectivePrice(item);
               return (
                 <li key={l.key} className="rounded-2xl border border-line bg-chip p-3" data-testid={`cart-line-${l.itemId}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                  <div className="flex items-start gap-3">
+                    <FoodImage src={item.image} alt="" className="size-12 shrink-0 rounded-lg" />
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold">{item.name}</p>
                       {l.addonIds.map((id) => (
-                        <p key={id} className="text-xs text-muted">+ {ADDON_BY_ID[id].name}</p>
+                        <p key={id} className="text-xs text-muted">+ {index.addonById[id]?.name ?? id}</p>
                       ))}
                       {l.obs && <p className="text-xs italic text-muted">Obs: {l.obs}</p>}
                     </div>
