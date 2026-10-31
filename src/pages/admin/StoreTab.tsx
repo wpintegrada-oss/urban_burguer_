@@ -59,6 +59,16 @@ export function StoreTab({ pin, settings }: { pin: string; settings: Settings })
       </section>
 
       <section className="space-y-4 rounded-2xl border border-line bg-panel p-4">
+        <h2 className="font-bold">PIX</h2>
+        <Field label="Chave PIX (ou código copia e cola)" id="sf-pix" hint="Aparece para o cliente que escolher PIX. Deixe vazio para não mostrar.">
+          <input id="sf-pix" maxLength={300} value={f.pixKey} data-testid="store-pix-key"
+            onChange={(e) => set("pixKey", e.target.value)} className={inputCls} />
+        </Field>
+        <ImageField label="QR code do PIX (opcional)" value={f.pixQr} onChange={(v) => set("pixQr", v)}
+          pin={pin} testId="store-pix-qr" />
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-line bg-panel p-4">
         <h2 className="font-bold">Horário de funcionamento</h2>
         <Field label="Texto que aparece no rodapé do site" id="sf-hours" hint="Pode usar várias linhas. Ex.: Seg a Sex: 18h às 23h">
           <textarea id="sf-hours" rows={4} maxLength={400} value={f.hours} data-testid="store-hours"
