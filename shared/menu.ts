@@ -39,6 +39,8 @@ export const DEFAULT_SETTINGS: Settings = {
   whatsappDisplay: "(86) 99816-6138",
   instagram: "urbanburguer__the",
   hours: "",
+  pixKey: "",
+  pixQr: "",
 };
 
 const cat = (id: string, name: string, icon: IconName, description: string): Omit<Category, "order" | "active"> => ({
@@ -205,7 +207,7 @@ export const DEFAULT_MENU: Menu = {
 // ──────────────────────────────────────────────────────────────────────────
 
 export const PAYMENT_METHODS: { id: PaymentMethod; name: string; desc: string; icon: "QrCode" | "CreditCard" | "Banknote" }[] = [
-  { id: "pix", name: "PIX (Instantâneo)", desc: "Chave PIX enviada no WhatsApp", icon: "QrCode" },
+  { id: "pix", name: "PIX (Instantâneo)", desc: "QR code e chave no pedido", icon: "QrCode" },
   { id: "cartao_credito", name: "Cartão de Crédito", desc: "Maquininha na entrega", icon: "CreditCard" },
   { id: "cartao_debito", name: "Cartão de Débito", desc: "Maquininha na entrega", icon: "CreditCard" },
   { id: "dinheiro", name: "Dinheiro", desc: "Informe se precisa de troco", icon: "Banknote" },

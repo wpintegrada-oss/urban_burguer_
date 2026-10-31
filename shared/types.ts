@@ -120,6 +120,8 @@ export interface Settings {
   whatsappNumber: string; // só dígitos, com 55, ex.: 5586998166138
   whatsappDisplay: string;
   instagram: string; // só o usuário, sem @ (ex.: urbanburguer)
+  pixKey: string; // chave PIX (copia e cola)
+  pixQr: string; // imagem do QR code (url)
   hours: string; // horário de funcionamento, texto livre (pode ter várias linhas)
 }
 
