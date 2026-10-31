@@ -89,6 +89,8 @@ export function toSettings(d: Document | null): Settings {
     whatsappDisplay: pick("whatsappDisplay"),
     instagram: pick("instagram"),
     hours: pick("hours"),
+    pixKey: pick("pixKey"),
+    pixQr: pick("pixQr"),
   };
 }
 

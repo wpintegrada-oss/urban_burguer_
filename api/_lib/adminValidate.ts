@@ -143,6 +143,9 @@ export function parseSettings(raw: unknown): Parsed<Settings> {
     return fail("Instagram inválido: use só o nome de usuário, ex.: urbanburguer");
   }
 
+  const qr = image(b.pixQr);
+  if (qr === null) return fail("Imagem do QR code inválida");
+
   return {
     ok: true,
     value: {
@@ -156,6 +159,8 @@ export function parseSettings(raw: unknown): Parsed<Settings> {
       whatsappDisplay: display,
       instagram: igRaw,
       hours: str(b.hours, 400),
+      pixKey: str(b.pixKey, 300),
+      pixQr: qr,
     },
   };
 }
