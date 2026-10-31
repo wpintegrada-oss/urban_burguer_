@@ -41,6 +41,33 @@ const EMPTY: FormState = {
 const inputCls =
   "w-full rounded-xl border border-line bg-chip px-4 py-3 text-sm outline-none placeholder:text-muted/70 focus:border-brand";
 
+function PixBox({ pixKey, pixQr }: { pixKey: string; pixQr: string }) {
+  if (!pixKey && !pixQr) return null;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(pixKey);
+      toast.success("Chave PIX copiada!");
+    } catch {
+      toast.error("Não consegui copiar. Selecione a chave e copie.");
+    }
+  };
+  return (
+    <div data-testid="pix-box" className="space-y-3 rounded-xl border border-line bg-panel p-4 text-center">
+      <p className="text-sm font-semibold">Pague com PIX</p>
+      {pixQr && <img src={pixQr} alt="QR code PIX" className="mx-auto size-44 rounded-lg bg-white p-2" />}
+      {pixKey && (
+        <>
+          <p data-testid="pix-key" className="break-all font-mono text-sm">{pixKey}</p>
+          <button type="button" onClick={copy}
+            className="rounded-full border border-line px-4 py-2 text-sm font-semibold transition hover:bg-panel-hover">
+            Copiar chave
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function Field({
   label,
   id,
@@ -132,6 +159,7 @@ export function CartDrawer() {
             Seu pedido foi registrado. Toque no botão abaixo para enviá-lo à loja pelo WhatsApp e
             agilizar a confirmação.
           </p>
+          {placed.payment.method === "pix" && <PixBox pixKey={settings.pixKey} pixQr={settings.pixQr} />}
           <a
             href={waUrl}
             target="_blank"
@@ -301,6 +329,7 @@ export function CartDrawer() {
                 );
               })}
             </div>
+            {form.payment === "pix" && <PixBox pixKey={settings.pixKey} pixQr={settings.pixQr} />}
             {form.payment === "dinheiro" && (
               <Field label="Troco para quanto? (deixe vazio se não precisa)" id="co-change">
                 <input id="co-change" data-testid="checkout-change-input" maxLength={40} placeholder="Ex.: R$ 50"
